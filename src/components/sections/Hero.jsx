@@ -1,15 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import GradientButton from '../ui/GradientButton';
+
+import heroBg from '../../assets/hero-bg.png';
 
 const Hero = () => {
     return (
         <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-dark-900">
             {/* Background Image */}
             <div
-                className="absolute inset-0 bg-cover bg-center z-0 opacity-100 mix-blend-screen"
-                style={{ backgroundImage: `url('https://img.sanishtech.com/u/f42ce6057f89df1b523aede25c0ef497.png')` }}
+                className="absolute inset-0 bg-cover bg-center z-0 opacity-100"
+                style={{ backgroundImage: `url(${heroBg})` }}
             />
 
             {/* Gradient Overlay for Fade */}
@@ -24,7 +25,7 @@ const Hero = () => {
                 >
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-sm font-medium">
                         <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                        New: Outbound Sales Agent
+                        Conversational Intelligence
                     </div>
 
                     <h1 className="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-aurora">
@@ -40,11 +41,9 @@ const Hero = () => {
                         <GradientButton variant="primary" className="!text-lg !px-10 h-[50px] flex items-center justify-center">
                             Book Now
                         </GradientButton>
-                        <Link to="/login">
-                            <GradientButton variant="outline" className="!text-lg !px-10 h-[50px] flex items-center justify-center">
-                                Login
-                            </GradientButton>
-                        </Link>
+                        <GradientButton variant="outline" className="!text-lg !px-10 h-[50px] flex items-center justify-center">
+                            Contact Sales
+                        </GradientButton>
                     </div>
                 </motion.div>
             </div>

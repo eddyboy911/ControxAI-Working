@@ -4,6 +4,7 @@ import Footer from '../components/layout/Footer';
 import Hero from '../components/sections/Hero';
 import SocialProof from '../components/sections/SocialProof';
 import Problem from '../components/sections/Problem';
+import VoiceDemos from '../components/sections/VoiceDemos';
 import Solution from '../components/sections/Solution';
 import Industries from '../components/sections/Industries';
 import Features from '../components/sections/Features';
@@ -20,6 +21,7 @@ const LandingPage = () => {
             <Hero />
             <SocialProof />
             <Problem />
+            <VoiceDemos />
             <Solution />
             <Industries />
             <Features />
