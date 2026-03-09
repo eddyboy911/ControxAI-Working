@@ -27,21 +27,37 @@ const CustomTooltip = ({ active, payload, label, currency }) => {
     return null;
 };
 
-const AnalyticsChart = ({ currency, customData }) => {
+const AnalyticsChart = ({ currency, customData, activeFilter, setActiveFilter }) => {
     const chartData = customData || data;
+
+    const filterOptions = ['Daily', 'Weekly', 'Monthly'];
 
     return (
         <GlassCard hoverEffect={false} className="!p-6 min-h-[300px] flex flex-col">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                    <h3 className="text-base font-bold text-white">Call Analytics</h3>
-                    <p className="text-xs text-gray-400">Weekly call volume and cost analysis</p>
+                    <h3 className="text-base font-bold text-white tracking-tight">Call Analytics</h3>
+                    <p className="text-xs text-gray-500 mt-1 font-medium">
+                        {activeFilter === 'Daily' ? 'Today\'s real-time performance' :
+                            activeFilter === 'Weekly' ? 'Weekly call volume and cost' :
+                                'Monthly overview and trends'}
+                    </p>
                 </div>
-                <select className="bg-white/5 border border-white/10 text-gray-300 text-xs rounded-lg px-2 py-1.5 outline-none focus:border-cyan-500/50">
-                    <option>Last 7 Days</option>
-                    <option>Last 30 Days</option>
-                    <option>This Year</option>
-                </select>
+
+                <div className="flex items-center gap-1 bg-black p-1 rounded-xl border border-white/10 shadow-lg">
+                    {filterOptions.map(option => (
+                        <button
+                            key={option}
+                            onClick={() => setActiveFilter(option)}
+                            className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${activeFilter === option
+                                ? 'bg-[#0044CE] text-white shadow-lg shadow-blue-900/40'
+                                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                }`}
+                        >
+                            {option}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="flex-1 w-full h-[220px] overflow-hidden relative">

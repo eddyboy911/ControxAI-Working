@@ -2,7 +2,7 @@ import React from 'react';
 import GlassCard from '../ui/GlassCard';
 import { Phone, PhoneIncoming, PhoneOutgoing, MoreVertical } from 'lucide-react';
 
-const RecentCalls = ({ currency, calls }) => {
+const RecentCalls = ({ currency, calls, onViewAll }) => {
     // Fallback if calls prop is missing
     const displayCalls = calls || [];
 
@@ -13,7 +13,10 @@ const RecentCalls = ({ currency, calls }) => {
                     <h3 className="text-base font-bold text-white">Recent Calls</h3>
                     <p className="text-xs text-gray-400">Latest activity from your agents</p>
                 </div>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium">
+                <button
+                    onClick={onViewAll}
+                    className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
+                >
                     View All
                 </button>
             </div>
