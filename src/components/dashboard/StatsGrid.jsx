@@ -22,30 +22,30 @@ const StatsGrid = ({ currency, stats }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + idx * 0.2, duration: 0.5 }}
                 >
-                    <GlassCard
-                        className="!p-5 flex items-center justify-between backdrop-blur-2xl border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl bg-gradient-to-br from-white/10 to-transparent shadow-lg shadow-black/20"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 text-white shadow-inner">
-                                {typeof stat.icon === 'string' ? (
-                                    <span className="text-xl font-bold text-gray-200">{stat.icon}</span>
-                                ) : (
-                                    <stat.icon size={22} className="text-gray-200" />
-                                )}
-                            </div>
-                            <div>
-                                <h3 className="text-gray-400 text-[10px] font-medium mb-0.5 tracking-wide uppercase">{stat.label}</h3>
-                                <p className="text-xl font-bold text-white tracking-tight">{stat.value}</p>
-                            </div>
-                        </div>
+        <GlassCard
+            className="!p-5 backdrop-blur-2xl border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl bg-gradient-to-br from-white/10 to-transparent shadow-lg shadow-black/20 flex flex-col justify-between h-full"
+        >
+            <div className="flex items-center gap-4">
+                <div className="p-3 w-12 h-12 shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 text-white shadow-inner">
+                    {typeof stat.icon === 'string' ? (
+                        <span className="text-xl font-bold text-gray-200">{stat.icon}</span>
+                    ) : (
+                        <stat.icon size={22} className="text-gray-200" />
+                    )}
+                </div>
+                <div>
+                    <h3 className="text-gray-400 text-[10px] font-medium mb-0.5 tracking-wide uppercase">{stat.label}</h3>
+                    <p className="text-xl font-bold text-white tracking-tight">{stat.value}</p>
+                </div>
+            </div>
 
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stat.change.startsWith('+')
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                            : 'bg-red-500/10 text-red-400 border-red-500/20'
-                            }`}>
-                            {stat.change}
-                        </span>
-                    </GlassCard>
+            <span className={`w-fit mt-4 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stat.change.startsWith('+')
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : 'bg-red-500/10 text-red-400 border-red-500/20'
+                }`}>
+                {stat.change}
+            </span>
+        </GlassCard>
                 </motion.div>
             ))}
         </div>

@@ -52,7 +52,9 @@ const Solution = () => {
                         ))}
                     </ul>
 
-                    <GradientButton>Listen to Samples</GradientButton>
+                    <GradientButton onClick={() => document.getElementById('voice-demos')?.scrollIntoView({ behavior: 'smooth' })}>
+                        Listen to Samples
+                    </GradientButton>
                 </motion.div>
 
             </div>

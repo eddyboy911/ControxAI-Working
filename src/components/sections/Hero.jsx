@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import GradientButton from '../ui/GradientButton';
+import ContactSalesModal from '../ui/ContactSalesModal';
+import BookDemoModal from '../ui/BookDemoModal';
 
 import heroBg from '../../assets/hero-bg.png';
 
 const Hero = () => {
+    const [salesOpen, setSalesOpen] = useState(false);
+    const [demoOpen, setDemoOpen] = useState(false);
+
     return (
         <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-dark-900">
             {/* Background Image */}
@@ -23,8 +28,8 @@ const Hero = () => {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="max-w-3xl space-y-8"
                 >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-sm font-medium">
-                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300 text-sm font-medium">
+                        <span className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
                         Conversational Intelligence
                     </div>
 
@@ -38,15 +43,22 @@ const Hero = () => {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                        <GradientButton variant="primary" className="!text-lg !px-10 h-[50px] flex items-center justify-center">
+                        <GradientButton variant="primary" className="!text-lg !px-10 h-[50px] flex items-center justify-center" onClick={() => setDemoOpen(true)}>
                             Book Now
                         </GradientButton>
-                        <GradientButton variant="outline" className="!text-lg !px-10 h-[50px] flex items-center justify-center">
+                        <GradientButton
+                            variant="outline"
+                            className="!text-lg !px-10 h-[50px] flex items-center justify-center"
+                            onClick={() => setSalesOpen(true)}
+                        >
                             Contact Sales
                         </GradientButton>
                     </div>
                 </motion.div>
             </div>
+
+            <ContactSalesModal isOpen={salesOpen} onClose={() => setSalesOpen(false)} />
+            <BookDemoModal isOpen={demoOpen} onClose={() => setDemoOpen(false)} />
         </section>
     );
 };

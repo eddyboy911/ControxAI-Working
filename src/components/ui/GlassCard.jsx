@@ -49,7 +49,7 @@ const GlassCard = ({ children, className, hoverEffect = true, ...props }) => {
             )}
 
             {/* Content */}
-            <div className="relative z-30">
+            <div className="relative z-30 flex-1 flex flex-col h-full w-full">
                 {children}
             </div>
         </div>

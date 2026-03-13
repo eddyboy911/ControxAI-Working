@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Lenis from 'lenis';
 import LandingPage from './pages/LandingPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import OnboardingPage from './pages/OnboardingPage';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
@@ -33,6 +36,9 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route

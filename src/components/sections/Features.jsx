@@ -1,6 +1,5 @@
 import React from 'react';
 import SectionWrapper from '../layout/SectionWrapper';
-import GlassCard from '../ui/GlassCard';
 import { Mic, Globe, Phone, Calendar, Repeat, Database, FileText, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -9,7 +8,7 @@ const features = [
     { icon: Globe, title: '40+ Languages', desc: 'Speak to your customers in their native language effortlessly.' },
     { icon: Phone, title: 'Inbound & Outbound', desc: 'Handle support calls or run automated sales campaigns.' },
     { icon: Calendar, title: 'Smart Booking', desc: 'Directly schedules appointments into your Google/Outlook calendar.' },
-    { icon: Repeat, title: 'Follow-up Automation', desc: 'Automatically sends SMS or email recaps after the call.' },
+    { icon: Repeat, title: 'Follow-up Automation', desc: 'Automatically sends SMS or email recaps after every call.' },
     { icon: Database, title: 'CRM Syncing', desc: 'Pushes all call data and leads straight to your CRM.' },
     { icon: FileText, title: 'Live Transcripts', desc: 'Real-time text transcription and call recording.' },
     { icon: CheckCircle2, title: '99% Uptime', desc: 'Enterprise-grade reliability you can trust.' }
@@ -18,30 +17,72 @@ const features = [
 const Features = () => {
     return (
         <SectionWrapper id="features">
-            <div className="mb-16">
-                <span className="text-cyan-400 font-medium tracking-wider uppercase text-sm">Capabilities</span>
-                <h2 className="text-4xl md:text-5xl font-bold mt-4 text-gradient">Everything an Agent Can Do, <br /> <span className="text-gray-500">Only Faster.</span></h2>
+
+            {/* Header — centered */}
+            <div className="mb-14 text-center">
+                <motion.span
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    className="text-xs tracking-[0.2em] uppercase text-gray-500 font-medium"
+                >
+                    Capabilities
+                </motion.span>
+
+                <motion.h2
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.05 }}
+                    className="text-4xl md:text-5xl font-bold mt-3 leading-tight tracking-tight"
+                    style={{
+                        background: 'linear-gradient(90deg, #ffffff 0%, #9ca3af 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}
+                >
+                    Everything an Agent Can Do
+                </motion.h2>
+
+                <motion.p
+                    initial={{ opacity: 0, y: 8 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.12 }}
+                    className="text-gray-500 text-base mt-4 max-w-lg mx-auto leading-relaxed"
+                >
+                    Controx AI works like a digital employee that answers calls,<br />
+                    books appointments, and manages customer conversations 24/7.
+                </motion.p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {features.map((feature, idx) => (
+            {/* Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {features.map((f, i) => (
                     <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 30 }}
+                        key={i}
+                        initial={{ opacity: 0, y: 16 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: idx * 0.05 }}
+                        transition={{ delay: i * 0.05 }}
+                        whileHover={{ scale: 1.03, transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } }}
+                        className="group p-7 rounded-2xl border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.14] transition-colors duration-300 flex flex-col gap-5 cursor-default"
                     >
-                        <GlassCard className="h-full hover:bg-white/10 transition-colors">
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center mb-6 text-cyan-400">
-                                <feature.icon size={24} />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                            <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
-                        </GlassCard>
+                        {/* Icon */}
+                        <div className="w-9 h-9 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center group-hover:border-white/20 transition-colors duration-300">
+                            <f.icon className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors duration-300" />
+                        </div>
+
+                        {/* Text */}
+                        <div>
+                            <h3 className="text-white font-semibold text-[15px] mb-1.5 leading-snug">{f.title}</h3>
+                            <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+                        </div>
                     </motion.div>
                 ))}
             </div>
+
         </SectionWrapper>
     );
 };

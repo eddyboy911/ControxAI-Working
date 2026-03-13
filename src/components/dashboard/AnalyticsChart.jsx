@@ -28,7 +28,7 @@ const CustomTooltip = ({ active, payload, label, currency }) => {
 };
 
 const AnalyticsChart = ({ currency, customData, activeFilter, setActiveFilter }) => {
-    const chartData = customData || data;
+    const chartData = (customData && customData.length > 0) ? customData : data;
 
     const filterOptions = ['Daily', 'Weekly', 'Monthly'];
 
@@ -60,8 +60,8 @@ const AnalyticsChart = ({ currency, customData, activeFilter, setActiveFilter })
                 </div>
             </div>
 
-            <div className="flex-1 w-full h-[220px] overflow-hidden relative">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 w-full relative" style={{ minHeight: 220 }}>
+                <ResponsiveContainer width="100%" height={220}>
                     <AreaChart
                         data={chartData}
                         margin={{ top: 10, right: 10, left: 0, bottom: 0 }}

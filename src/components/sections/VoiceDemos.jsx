@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import SectionWrapper from '../layout/SectionWrapper';
 import GlassCard from '../ui/GlassCard';
-import { Play, Pause, Stethoscope, Home, CalendarCheck, Plane, GraduationCap, CreditCard } from 'lucide-react';
+import { Play, Pause, Stethoscope, Home, CalendarCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const VoiceDemos = () => {
@@ -25,24 +25,6 @@ const VoiceDemos = () => {
             title: "Dental: Check-up Reminder",
             time: "0:30",
             icon: CalendarCheck,
-        },
-        {
-            id: 4,
-            title: "Tourism: Travel Booking",
-            time: "0:55",
-            icon: Plane,
-        },
-        {
-            id: 5,
-            title: "EdTech: Student Assist",
-            time: "0:40",
-            icon: GraduationCap,
-        },
-        {
-            id: 6,
-            title: "Finance: Loan Inquiry",
-            time: "1:05",
-            icon: CreditCard,
         }
     ];
 

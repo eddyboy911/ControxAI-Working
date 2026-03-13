@@ -134,8 +134,10 @@ const Dashboard = () => {
             { name: 'Voicemail', value: statusCounts['Voicemail'], color: '#0044CE' },
         ].filter(d => d.value > 0));
 
-        setActivityData(Array.from(graphMap.values())
-            .map(i => ({ name: i.name, calls: i.calls, cost: Number(i.cost.toFixed(2)) }))
+        const sortedActivityData = Array.from(graphMap.values()).sort((a, b) => a.date - b.date);
+
+        setActivityData(
+            sortedActivityData.map(i => ({ name: i.name, calls: i.calls, cost: Number(i.cost.toFixed(2)) }))
         );
 
         const formattedCalls = (allCalls || []).slice(0, 5).map(call => {

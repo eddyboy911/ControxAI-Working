@@ -2,8 +2,15 @@ import React from 'react';
 import SectionWrapper from '../layout/SectionWrapper';
 
 const logos = [
-    "TechCorp", "Innovate", "GlobalSoft", "FutureNet", "DataSystems", "CloudSync"
+    { url: "https://brandsparc.com/wp-content/uploads/2025/10/Clip-path-group.png", alt: "Brandsparc Logo 1" },
+    { url: "https://brandsparc.com/wp-content/uploads/2025/10/Group-383444-1.png", alt: "Brandsparc Logo 2" },
+    { url: "https://brandsparc.com/wp-content/uploads/2025/10/7867-1.png", alt: "Brandsparc Logo 3" },
+    { url: "https://brandsparc.com/wp-content/uploads/2026/03/image__2_-removebg-preview-1.png", alt: "Brandsparc Logo 4" },
+    { url: "https://brandsparc.com/wp-content/uploads/2026/03/arbutus-logo-dark.webp", alt: "Arbutus Logo" },
+    { url: "https://brandsparc.com/wp-content/uploads/2026/03/logo.png", alt: "Logo 6" }
 ];
+
+const repeatingLogos = [...logos, ...logos, ...logos, ...logos];
 
 const SocialProof = () => {
     return (
@@ -13,17 +20,31 @@ const SocialProof = () => {
             </div>
 
             <div className="relative w-full overflow-hidden mask-gradient">
-                {/* Simple CSS Marquee for now - can enhance with Framer Motion loop later */}
-                <div className="flex gap-16 md:gap-32 animate-scroll whitespace-nowrap">
-                    {[...logos, ...logos].map((logo, i) => (
-                        <div key={i} className="text-2xl font-bold text-white/20 hover:text-white/40 transition-colors uppercase">
-                            {/* Placeholder for SVG Logos */}
-                            <span className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-white/10 rounded-full" />
-                                {logo}
-                            </span>
-                        </div>
-                    ))}
+                <div className="flex w-[max-content] animate-scroll hover:[animation-play-state:paused]">
+                    {/* First set of logos */}
+                    <div className="flex w-1/2 justify-around gap-16 md:gap-32 px-8 md:px-16 items-center">
+                        {repeatingLogos.map((logo, i) => (
+                            <div key={`first-${i}`} className="flex-shrink-0 opacity-40 hover:opacity-100 transition-opacity duration-300">
+                                <img
+                                    src={logo.url}
+                                    alt={logo.alt}
+                                    className="h-8 md:h-10 w-auto object-contain filter grayscale hover:grayscale-0 transition-all duration-300"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    {/* Second mirrored set of logos for seamless looping */}
+                    <div className="flex w-1/2 justify-around gap-16 md:gap-32 px-8 md:px-16 items-center">
+                        {repeatingLogos.map((logo, i) => (
+                            <div key={`second-${i}`} className="flex-shrink-0 opacity-40 hover:opacity-100 transition-opacity duration-300">
+                                <img
+                                    src={logo.url}
+                                    alt={logo.alt}
+                                    className="h-8 md:h-10 w-auto object-contain filter grayscale hover:grayscale-0 transition-all duration-300"
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </SectionWrapper>

@@ -98,6 +98,10 @@
     animation: blob 25s infinite;
   }
 
+  .animate-scroll {
+    animation: scroll 20s linear infinite;
+  }
+
   .animate-blob-reverse {
     animation: blob-reverse 30s infinite;
     /* Slower and different timing */
