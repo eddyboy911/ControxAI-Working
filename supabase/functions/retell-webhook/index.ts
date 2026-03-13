@@ -28,10 +28,11 @@ serve(async (req) => {
         const supabase = createClient(supabaseUrl, supabaseKey)
         
         // For processing the end of a call we particularly care about 'call_analyzed'
-        // 'call_ended' is also useful but usually 'call_analyzed' has transcript and cost
-        // Retell sends events like call_started, call_ended, call_analyzed
+        // 'call_ended' is fired immediately when the call drops, but 'call_analyzed' comes seconds later.
+        // To prevent a race condition that creates duplicate call logs, we only process 'call_analyzed'
+        // which contains the final transcript, cost, and summary data.
         
-        if (body.event === 'call_analyzed' || body.event === 'call_ended') {
+        if (body.event === 'call_analyzed') {
             const callData = body.data || body.call
             if (!callData) {
                 console.log('No call data found in event')
