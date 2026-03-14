@@ -1,123 +1,252 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import GlassCard from '../ui/GlassCard';
-import { Calendar, Clock, User, CheckCircle2, XCircle, AlertCircle, ChevronRight, MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Calendar, Clock, User, CheckCircle2, XCircle, AlertCircle, Phone } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../../lib/supabase';
+
+const STATUS_FLOW = ['pending', 'confirmed', 'completed', 'cancelled'];
+
+const STATUS_CONFIG = {
+    pending:   { label: 'Pending',   color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20',   icon: AlertCircle },
+    confirmed: { label: 'Confirmed', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', icon: CheckCircle2 },
+    completed: { label: 'Completed', color: 'text-blue-400',    bg: 'bg-blue-500/10 border-blue-500/20',    icon: CheckCircle2 },
+    cancelled: { label: 'Cancelled', color: 'text-red-400',     bg: 'bg-red-500/10 border-red-500/20',     icon: XCircle },
+};
+
+const FILTERS = ['All', 'Today', 'This Week', 'This Month'];
 
 const Bookings = ({ bookings, calls, loading }) => {
-    const [selectedBookingId, setSelectedBookingId] = React.useState(null);
+    const [selectedBookingId, setSelectedBookingId] = useState(null);
+    const [filter, setFilter] = useState('All');
+    const [localStatuses, setLocalStatuses] = useState({});
+    const [updatingId, setUpdatingId] = useState(null);
 
-    // Filter display bookings and find their related call summaries
-    const displayBookings = (bookings?.length > 0 ? bookings : [
-        { id: 'sample-1', customer_name: 'Sarah Johnson', start_time: new Date(Date.now() + 86400000).toISOString(), status: 'Confirmed', call_id: 'sample-call-1' },
-        { id: 'sample-2', customer_name: 'Michael Chen', start_time: new Date(Date.now() + 172800000).toISOString(), status: 'Pending', call_id: 'sample-call-2' },
-        { id: 'sample-3', customer_name: 'Emma Wilson', start_time: new Date(Date.now() - 86400000).toISOString(), status: 'Completed', call_id: 'sample-call-3' },
-    ]).map(booking => {
-        // Find summary from calls array if matching call_id exists
-        const relatedCall = (calls || []).find(c => c.id === booking.call_id);
-        return {
-            ...booking,
-            summary: relatedCall?.summary || booking.summary || "No call summary available for this booking."
-        };
-    });
+    const updateStatus = async (bookingId, currentStatus) => {
+        const currentIdx = STATUS_FLOW.indexOf(currentStatus);
+        const nextStatus = currentStatus === 'cancelled'
+            ? 'pending'
+            : STATUS_FLOW[Math.min(currentIdx + 1, STATUS_FLOW.length - 2)];
 
-    const getStatusStyle = (status) => {
-        switch (status?.toLowerCase()) {
-            case 'confirmed': return 'text-emerald-400';
-            case 'pending': return 'text-amber-400';
-            case 'completed': return 'text-blue-400';
-            case 'cancelled': return 'text-red-400';
-            default: return 'text-gray-400';
+        setUpdatingId(bookingId);
+        setLocalStatuses(prev => ({ ...prev, [bookingId]: nextStatus }));
+
+        try {
+            await supabase.from('bookings').update({ status: nextStatus }).eq('id', bookingId);
+        } catch (e) {
+            setLocalStatuses(prev => ({ ...prev, [bookingId]: currentStatus }));
+        } finally {
+            setUpdatingId(null);
         }
     };
 
-    const getStatusIcon = (status) => {
-        switch (status?.toLowerCase()) {
-            case 'confirmed': return <CheckCircle2 size={12} />;
-            case 'pending': return <AlertCircle size={12} />;
-            case 'completed': return <CheckCircle2 size={12} />;
-            case 'cancelled': return <XCircle size={12} />;
-            default: return <AlertCircle size={12} />;
+    const cancelBooking = async (bookingId) => {
+        setUpdatingId(bookingId);
+        setLocalStatuses(prev => ({ ...prev, [bookingId]: 'cancelled' }));
+        try {
+            await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId);
+        } catch (e) {
+            setLocalStatuses(prev => {
+                const copy = { ...prev };
+                delete copy[bookingId];
+                return copy;
+            });
+        } finally {
+            setUpdatingId(null);
         }
     };
+
+    const filteredBookings = useMemo(() => {
+        const list = (bookings || []).map(b => ({
+            ...b,
+            status: localStatuses[b.id] ?? b.status,
+            summary: (calls || []).find(c => c.id === b.call_id)?.summary || b.summary || b.notes || 'No details available.'
+        }));
+
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (filter === 'Today') {
+            const end = new Date(startOfDay); end.setDate(end.getDate() + 1);
+            return list.filter(b => {
+                const d = new Date(b.start_time || b.created_at);
+                return d >= startOfDay && d < end;
+            });
+        }
+        if (filter === 'This Week') {
+            const weekStart = new Date(startOfDay);
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 7);
+            return list.filter(b => {
+                const d = new Date(b.start_time || b.created_at);
+                return d >= weekStart && d < weekEnd;
+            });
+        }
+        if (filter === 'This Month') {
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            return list.filter(b => {
+                const d = new Date(b.start_time || b.created_at);
+                return d >= monthStart && d < monthEnd;
+            });
+        }
+        return list;
+    }, [bookings, calls, filter, localStatuses]);
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-end items-center">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/5 border border-white/10 text-cyan-400 text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-cyan-500/10">
-                    <Calendar size={14} />
-                    Syncing with Calendar
+        <div className="space-y-8">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-center justify-end gap-6 mb-2">
+                <div className="flex items-center gap-1.5 p-1 bg-white/[0.03] border border-white/5 rounded-2xl">
+                    {FILTERS.map(f => (
+                        <button
+                            key={f}
+                            onClick={() => setFilter(f)}
+                            className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                                filter === f
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                            }`}
+                        >
+                            {f}
+                        </button>
+                    ))}
                 </div>
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+                <div className="flex items-center justify-center py-32">
+                    <div className="relative">
+                        <div className="w-16 h-16 rounded-full border-4 border-blue-500/20" />
+                        <div className="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+                    </div>
+                </div>
+            ) : filteredBookings.length === 0 ? (
+                <div className="py-32 flex flex-col items-center justify-center text-center">
+                    <div className="w-20 h-20 rounded-3xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-6">
+                        <Calendar size={32} className="text-gray-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">
+                        {filter === 'All' ? 'Queue is empty' : `No bookings ${filter.toLowerCase()}`}
+                    </h3>
+                    <p className="text-gray-500 max-w-xs text-sm leading-relaxed">
+                        {filter === 'All'
+                            ? "Bookings handled by your agent will be listed here and synced to your workflow."
+                            : 'Try expanding your filter to see more bookings.'}
+                    </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {displayBookings.map((booking, idx) => (
-                        <motion.div
-                            key={booking.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: idx * 0.05 }}
-                        >
-                            <GlassCard className="group hover:border-white/20 transition-all duration-300 relative overflow-hidden flex flex-col h-fit p-4">
-                                <div className="flex justify-between items-center mb-4 relative z-10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-cyan-500/30 transition-all">
-                                            <User size={16} className="text-cyan-400" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {filteredBookings.map((booking, idx) => {
+                        const cfg = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending;
+                        const StatusIcon = cfg.icon;
+                        const isUpdating = updatingId === booking.id;
+                        const isOpen = selectedBookingId === booking.id;
+
+                        return (
+                            <motion.div
+                                key={booking.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05, duration: 0.3 }}
+                            >
+                                <GlassCard className="group relative border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300 p-0 overflow-hidden rounded-xl">
+                                    {/* Card Content Container */}
+                                    <div className="p-3.5 space-y-2.5">
+                                        {/* Patient Identity & Status */}
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-white/5 flex items-center justify-center flex-shrink-0">
+                                                    <User size={14} className="text-blue-400" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h4 className="text-sm font-bold text-white truncate leading-none mb-1">
+                                                        {booking.customer_name}
+                                                    </h4>
+                                                    <div className="flex items-center gap-1 text-gray-500">
+                                                        <Phone size={8} />
+                                                        <span className="text-[10px] font-medium truncate">
+                                                            {booking.customer_phone || 'No contact'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <button
+                                                onClick={() => updateStatus(booking.id, booking.status)}
+                                                disabled={isUpdating}
+                                                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider border transition-all ${cfg.color} ${cfg.bg} hover:brightness-110 active:scale-95 flex-shrink-0`}
+                                            >
+                                                {isUpdating ? <div className="w-2 h-2 border border-current border-t-transparent rounded-full animate-spin" /> : <StatusIcon size={9} />}
+                                                {cfg.label}
+                                            </button>
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors uppercase tracking-tight leading-none mb-1.5">{booking.customer_name}</h4>
-                                            <div className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest leading-none ${getStatusStyle(booking.status)}`}>
-                                                {getStatusIcon(booking.status)}
-                                                {booking.status}
+
+                                        {/* Simplified Schedule */}
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-lg px-2 py-1.5 transition-all hover:bg-white/[0.04]">
+                                                <Calendar size={10} className="text-blue-400" />
+                                                <span className="text-xs font-bold text-gray-200">
+                                                    {booking.start_time 
+                                                        ? new Date(booking.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                                        : 'TBD'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-lg px-2 py-1.5 transition-all hover:bg-white/[0.04]">
+                                                <Clock size={10} className="text-purple-400" />
+                                                <span className="text-xs font-bold text-gray-200">
+                                                    {booking.start_time 
+                                                        ? new Date(booking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                        : 'TBD'}
+                                                </span>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
 
-                                <div className="space-y-2 relative z-10 mb-4 px-0.5">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500 bg-white/[0.02] py-2 px-3 rounded-xl border border-white/5">
-                                            <Calendar size={12} className="text-cyan-500 opacity-70" />
-                                            {booking.start_time ? new Date(booking.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'}
+                                        {/* Fast Actions */}
+                                        <div className="flex gap-1.5">
+                                            <button
+                                                onClick={() => setSelectedBookingId(isOpen ? null : booking.id)}
+                                                className={`flex-1 h-7 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${
+                                                    isOpen
+                                                        ? 'bg-blue-600 border-blue-400 text-white'
+                                                        : 'bg-white/5 border-white/5 text-gray-500 hover:text-white hover:bg-white/10'
+                                                }`}
+                                            >
+                                                {isOpen ? 'Close' : 'Patient Notes'}
+                                            </button>
+                                            
+                                            {booking.status !== 'cancelled' && (
+                                                <button
+                                                    onClick={() => cancelBooking(booking.id)}
+                                                    disabled={isUpdating}
+                                                    className="w-7 h-7 rounded-lg bg-red-500/5 border border-red-500/10 flex items-center justify-center text-red-400/50 hover:text-red-400 hover:bg-red-500/10 transition-all flex-shrink-0"
+                                                >
+                                                    <XCircle size={14} />
+                                                </button>
+                                            )}
                                         </div>
-                                        <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500 bg-white/[0.02] py-2 px-3 rounded-xl border border-white/5">
-                                            <Clock size={12} className="text-purple-500 opacity-70" />
-                                            {booking.start_time ? new Date(booking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
-                                        </div>
                                     </div>
 
-                                    {selectedBookingId === booking.id && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -5 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="pt-2"
-                                        >
-                                            <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 text-[10px] text-gray-400 leading-relaxed font-medium">
-                                                <p className="text-[8px] uppercase tracking-widest font-black text-gray-600 mb-1.5 border-b border-white/5 pb-1">Call Summary</p>
-                                                {booking.summary}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </div>
-
-                                <div className="relative z-10 mt-auto">
-                                    <button
-                                        onClick={() => setSelectedBookingId(selectedBookingId === booking.id ? null : booking.id)}
-                                        className={`w-full text-[9px] font-black uppercase tracking-[0.2em] py-2.5 rounded-xl transition-all duration-300 border ${selectedBookingId === booking.id
-                                            ? 'bg-blue-600 text-white border-blue-400 shadow-xl shadow-blue-600/20 translate-y-[-1px]'
-                                            : 'bg-white/5 hover:bg-white/10 text-gray-400 border-white/5 hover:border-white/10'
-                                            }`}
-                                    >
-                                        {selectedBookingId === booking.id ? 'Close Details' : 'Details'}
-                                    </button>
-                                </div>
-                            </GlassCard>
-                        </motion.div>
-                    ))}
+                                    {/* Expanded Panel */}
+                                    <AnimatePresence>
+                                        {isOpen && (
+                                            <motion.div
+                                                initial={{ height: 0 }}
+                                                animate={{ height: 'auto' }}
+                                                exit={{ height: 0 }}
+                                                className="overflow-hidden border-t border-white/5 bg-blue-500/[0.02]"
+                                            >
+                                                <div className="p-3">
+                                                    <p className="text-[12px] text-gray-400 leading-snug italic">
+                                                        "{booking.summary}"
+                                                    </p>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </GlassCard>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             )}
         </div>

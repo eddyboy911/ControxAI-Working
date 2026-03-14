@@ -252,7 +252,7 @@ const DashboardLayout = () => {
     const tabInfo = {
         'Overview': { subtext: '' },
         'Call Logs': { subtext: 'View and manage all your voice interactions' },
-        'Bookings': { subtext: 'Manage your AI-generated appointments and schedules' },
+        'Bookings': { subtext: 'Review and manage all bookings handled by your AI agent' },
         'Test Agent': { subtext: 'Interact with your AI agents in a live simulation environment' },
         'Analytics': { subtext: 'Deep dive into your performance metrics and call data' },
         'Billing': { subtext: 'Manage your subscription plan and payment methods' },
