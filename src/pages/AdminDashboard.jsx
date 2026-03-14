@@ -45,6 +45,11 @@ const AdminDashboard = () => {
     const [showCreateOrgModal, setShowCreateOrgModal] = useState(() => {
         return localStorage.getItem('showCreateOrgModal') === 'true';
     });
+    
+    // Edit Org state (not persisted, session only)
+    const [showEditOrgModal, setShowEditOrgModal] = useState(false);
+    const [editOrgForm, setEditOrgForm] = useState({ id: '', name: '', email: '' });
+
     const [showLinkAgentModal, setShowLinkAgentModal] = useState(() => {
         return localStorage.getItem('showLinkAgentModal') === 'true';
     });
@@ -209,10 +214,34 @@ They should change their password after first login.`);
     };
 
     const handleEditOrg = (orgId) => {
-        // TODO: Implement edit functionality
-        console.log('Editing organization:', orgId);
-        alert('Edit functionality coming soon!');
+        const org = organizations.find(o => o.id === orgId);
+        if (org) {
+            setEditOrgForm({ id: org.id, name: org.name, email: org.email });
+            setShowEditOrgModal(true);
+        }
         setActiveActionMenu(null);
+    };
+
+    const submitEditOrg = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const { error } = await supabase
+                .from('organizations')
+                .update({ name: editOrgForm.name })
+                .eq('id', editOrgForm.id);
+
+            if (error) throw error;
+            
+            alert('✅ Organization updated successfully!');
+            setShowEditOrgModal(false);
+            await fetchOrganizations();
+        } catch (err) {
+            console.error('Error updating organization:', err);
+            alert(`❌ Error updating organization: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Close action menu when clicking outside
@@ -962,6 +991,85 @@ They should change their password after first login.`);
                                     className="flex-1 px-4 py-3.5 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 rounded-2xl font-medium shadow-xl shadow-purple-500/20 transition-all duration-300 disabled:opacity-50"
                                 >
                                     {loading ? 'Creating...' : 'Create'}
+                                </motion.button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Edit Organization Modal */}
+            {showEditOrgModal && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowEditOrgModal(false);
+                        }
+                    }}
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ type: "spring", damping: 20 }}
+                        className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 max-w-md w-full shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-2xl font-bold text-white">
+                                Edit Organization
+                            </h3>
+                            <motion.button
+                                whileHover={{ scale: 1.1, rotate: 90 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => setShowEditOrgModal(false)}
+                                className="p-2.5 hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/10"
+                            >
+                                <X size={20} className="text-gray-400" />
+                            </motion.button>
+                        </div>
+                        <form onSubmit={submitEditOrg} className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Organization Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editOrgForm.name}
+                                    onChange={(e) => setEditOrgForm({ ...editOrgForm, name: e.target.value })}
+                                    required
+                                    className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Admin Email <span className="text-gray-500">(Cannot be changed)</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    value={editOrgForm.email}
+                                    disabled
+                                    className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3.5 text-gray-400 opacity-70 cursor-not-allowed"
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-4">
+                                <motion.button
+                                    type="button"
+                                    onClick={() => setShowEditOrgModal(false)}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="flex-1 px-4 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-medium transition-all"
+                                >
+                                    Cancel
+                                </motion.button>
+                                <motion.button
+                                    type="submit"
+                                    disabled={loading}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="flex-1 px-4 py-3.5 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 rounded-2xl font-medium shadow-xl shadow-purple-500/20 transition-all duration-300 disabled:opacity-50"
+                                >
+                                    {loading ? 'Saving...' : 'Save Changes'}
                                 </motion.button>
                             </div>
                         </form>

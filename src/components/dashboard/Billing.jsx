@@ -37,19 +37,40 @@ const Billing = ({ currency, calls = [] }) => {
         };
     }, [calls]);
 
-    // Mock Chart Data for "Call + Chat Cost"
+    // Real Chart Data for "Call + Chat Cost"
     const chartData = useMemo(() => {
-        const mockData = [
-            { name: 'Feb 28', cost: 0.5 },
-            { name: 'Mar 1', cost: 0.8 },
-            { name: 'Mar 2', cost: 0.3 },
-            { name: 'Mar 3', cost: 1.2 },
-            { name: 'Mar 4', cost: 0.9 },
-            { name: 'Mar 5', cost: 1.5 },
-            { name: 'Mar 6', cost: Number(usageStats.totalCost) }
-        ];
-        return mockData;
-    }, [usageStats.totalCost]);
+        if (!calls || calls.length === 0) return [];
+        
+        const graphMap = new Map();
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        let filterDate = new Date(todayStart);
+        let numDays = chartFilter === 'Day' ? 7 : 30; // 7 days for 'Day', 30 days for 'Week'
+        filterDate.setDate(filterDate.getDate() - (numDays - 1));
+
+        for (let i = 0; i < numDays; i++) {
+            const d = new Date(filterDate);
+            d.setDate(d.getDate() + i);
+            const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            graphMap.set(label, { name: label, cost: 0, date: new Date(d) });
+        }
+
+        calls.forEach(call => {
+            const callDate = new Date(call.started_at || call.created_at);
+            if (callDate >= filterDate) {
+                const label = callDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                if (graphMap.has(label)) {
+                    const d = graphMap.get(label);
+                    d.cost += Number(call.cost || 0);
+                }
+            }
+        });
+
+        return Array.from(graphMap.values())
+            .sort((a, b) => a.date - b.date)
+            .map(item => ({ name: item.name, cost: Number(item.cost.toFixed(2)) }));
+    }, [calls, chartFilter]);
 
     const historyData = [
         { id: 'INV-001', date: 'Mar 01, 2026', amount: '$50.00', status: 'Paid' },
